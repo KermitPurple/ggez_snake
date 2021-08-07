@@ -49,6 +49,16 @@ impl Game {
         let mesh = mb.build(ctx)?;
         graphics::draw(ctx, &mesh, DrawParam::default())
     }
+
+    fn draw_square(&mut self, ctx: &mut Context, point: Point, color: Color) -> GameResult {
+        let c = self.conf.cell_size;
+        let square = graphics::Mesh::new_rectangle(ctx, DrawMode::fill(), Rect::new(0., 0., c, c), color)?;
+        let point = new_point(
+            point.x * c,
+            point.y * c,
+        );
+        graphics::draw(ctx, &square, DrawParam::default().dest(point))
+    }
 }
 
 impl EventHandler<GameError> for Game {
