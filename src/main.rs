@@ -20,6 +20,7 @@ use ggez::{
 };
 use winit::dpi::PhysicalPosition;
 use std::collections::VecDeque;
+use rand::prelude::*;
 
 type Point = mint::Point2<f32>;
 
@@ -46,6 +47,7 @@ impl Direction {
 struct Game {
     conf: GameConf,
     snake: Snake,
+    fruit: Point,
 }
 
 impl Game {
@@ -56,6 +58,7 @@ impl Game {
                 (conf.grid_size.x / 2.).floor(),
                 (conf.grid_size.y / 2.).floor(),
             )),
+            fruit: random_point(conf.grid_size),
         }
     }
 
@@ -95,12 +98,33 @@ impl Game {
         }
         Ok(())
     }
+
+    fn draw_fruit(&mut self, ctx: &mut Context) -> GameResult {
+        self.draw_square(ctx, self.fruit, Color::RED)
+    }
+
+    fn new_fruit(&mut self) {
+        let mut rng = rand::thread_rng();
+        let mut points = vec![];
+        for i in 0..self.conf.grid_size.y as i32 {
+            for j in 0..self.conf.grid_size.x as i32 {
+                points.push(new_point(j as f32, i as f32));
+            }
+        }
+        self.fruit = points[rng.gen_range(0..points.len())];
+    }
 }
 
 impl EventHandler<GameError> for Game {
     fn update(&mut self, ctx: &mut Context) -> GameResult {
-        if timer::check_update_time(ctx, self.conf.fps) {
+        if !self.snake.alive {
+            event::quit(ctx);
+        } else if timer::check_update_time(ctx, self.conf.fps) {
             self.snake.update(self.conf.grid_size)?;
+            if self.snake.head == self.fruit {
+                self.snake.length_to_add += 2;
+                self.new_fruit();
+            }
         }
         Ok(())
     }
@@ -109,6 +133,7 @@ impl EventHandler<GameError> for Game {
         graphics::clear(ctx, Color::BLACK);
         self.draw_grid(ctx)?;
         self.draw_snake(ctx)?;
+        self.draw_fruit(ctx)?;
         graphics::present(ctx)?;
         timer::yield_now();
         Ok(())
@@ -173,9 +198,6 @@ impl Snake {
     }
 
     fn update(&mut self, grid_size: Point) -> GameResult {
-        if !self.alive {
-            return Ok(());
-        }
         let new_head = match self.direction {
             Direction::Up => new_point(self.head.x, self.head.y - 1.),
             Direction::Down => new_point(self.head.x, self.head.y + 1.),
@@ -222,6 +244,14 @@ fn new_point(x: f32, y: f32) -> Point {
         x,
         y,
     }
+}
+
+fn random_point(range: Point) -> Point {
+    let mut rng = rand::thread_rng();
+    new_point(
+        rng.gen_range(0.0..range.x).floor(),
+        rng.gen_range(0.0..range.y).floor(),
+    )
 }
 
 fn main() -> GameResult{
