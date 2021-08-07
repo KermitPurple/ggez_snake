@@ -30,6 +30,25 @@ impl Game {
             conf,
         }
     }
+
+    fn draw_grid(&mut self, ctx: &mut Context) -> GameResult {
+        let mut mb = graphics::MeshBuilder::new();
+        let x = self.conf.grid_size.x as i32;
+        let y = self.conf.grid_size.y as i32;
+        let ws = self.conf.window_size;
+        let c = self.conf.cell_size;
+        let color = Color::from_rgb(20, 20, 20);
+        for i in 0..x {
+            let x = i as f32 * c;
+            mb.line(&[new_point(x, 0.), new_point(x, ws.y)], 1., color)?;
+        }
+        for i in 0..y {
+            let y = i as f32 * c;
+            mb.line(&[new_point(0., y), new_point(ws.x, y)], 1., color)?;
+        }
+        let mesh = mb.build(ctx)?;
+        graphics::draw(ctx, &mesh, DrawParam::default())
+    }
 }
 
 impl EventHandler<GameError> for Game {
@@ -39,6 +58,7 @@ impl EventHandler<GameError> for Game {
 
     fn draw(&mut self, ctx: &mut Context) -> GameResult {
         graphics::clear(ctx, Color::BLACK);
+        self.draw_grid(ctx)?;
         graphics::present(ctx)
     }
 }
