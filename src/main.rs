@@ -1,24 +1,13 @@
 use ggez::{
-    Context,
-    ContextBuilder,
-    GameResult,
-    GameError,
-    timer,
-    conf::{WindowSetup, WindowMode},
+    conf::{WindowMode, WindowSetup},
     event::{self, EventHandler},
+    graphics::{self, mint, Color, DrawMode, DrawParam, Rect},
     input::keyboard::{self, KeyCode},
-    graphics::{
-        self,
-        mint,
-        Rect,
-        Color,
-        DrawMode,
-        DrawParam,
-    },
+    timer, Context, ContextBuilder, GameError, GameResult,
 };
-use winit::dpi::PhysicalPosition;
-use std::collections::VecDeque;
 use rand::prelude::*;
+use std::collections::VecDeque;
+use winit::dpi::PhysicalPosition;
 
 type Point = mint::Point2<f32>;
 
@@ -27,7 +16,7 @@ enum Direction {
     Up,
     Down,
     Left,
-    Right
+    Right,
 }
 
 impl Direction {
@@ -81,11 +70,9 @@ impl Game {
 
     fn draw_square(&mut self, ctx: &mut Context, point: Point, color: Color) -> GameResult {
         let c = self.conf.cell_size;
-        let square = graphics::Mesh::new_rectangle(ctx, DrawMode::fill(), Rect::new(0., 0., c, c), color)?;
-        let point = new_point(
-            point.x * c,
-            point.y * c,
-        );
+        let square =
+            graphics::Mesh::new_rectangle(ctx, DrawMode::fill(), Rect::new(0., 0., c, c), color)?;
+        let point = new_point(point.x * c, point.y * c);
         graphics::draw(ctx, &square, DrawParam::default().dest(point))
     }
 
@@ -137,7 +124,13 @@ impl EventHandler<GameError> for Game {
         Ok(())
     }
 
-    fn key_down_event(&mut self, _ctx: &mut Context, key: KeyCode, _mods: keyboard::KeyMods, _: bool) {
+    fn key_down_event(
+        &mut self,
+        _ctx: &mut Context,
+        key: KeyCode,
+        _mods: keyboard::KeyMods,
+        _: bool,
+    ) {
         self.snake.handle_kbin(key).unwrap();
     }
 }
@@ -159,7 +152,6 @@ impl GameConf {
             fps,
         }
     }
-
 }
 
 struct Snake {
@@ -202,11 +194,12 @@ impl Snake {
             Direction::Left => new_point(self.head.x - 1., self.head.y),
             Direction::Right => new_point(self.head.x + 1., self.head.y),
         };
-        if new_head.x < 0. ||
-            new_head.y < 0. ||
-            new_head.x >= grid_size.x ||
-            new_head.y >= grid_size.y ||
-            self.tail.contains(&new_head) {
+        if new_head.x < 0.
+            || new_head.y < 0.
+            || new_head.x >= grid_size.x
+            || new_head.y >= grid_size.y
+            || self.tail.contains(&new_head)
+        {
             self.alive = false;
         } else {
             self.update_tail()?;
@@ -238,10 +231,7 @@ impl Snake {
 }
 
 fn new_point(x: f32, y: f32) -> Point {
-    Point {
-        x,
-        y,
-    }
+    Point { x, y }
 }
 
 fn random_point(range: Point) -> Point {
@@ -252,14 +242,14 @@ fn random_point(range: Point) -> Point {
     )
 }
 
-fn main() -> GameResult{
+fn main() -> GameResult {
     let conf = GameConf::new(new_point(65., 45.), 40., 10);
     let (mut ctx, event_loop) = ContextBuilder::new("Snake", "KermitPurple")
-        .window_setup(WindowSetup{
+        .window_setup(WindowSetup {
             title: String::from("Snake"),
             ..Default::default()
         })
-        .window_mode(WindowMode{
+        .window_mode(WindowMode {
             width: conf.window_size.x,
             height: conf.window_size.y,
             ..Default::default()
