@@ -10,8 +10,6 @@ use ggez::{
     graphics::{
         self,
         mint,
-        Font,
-        Text,
         Rect,
         Color,
         DrawMode,
@@ -139,7 +137,7 @@ impl EventHandler<GameError> for Game {
         Ok(())
     }
 
-    fn key_down_event(&mut self, ctx: &mut Context, key: KeyCode, _mods: keyboard::KeyMods, _: bool) {
+    fn key_down_event(&mut self, _ctx: &mut Context, key: KeyCode, _mods: keyboard::KeyMods, _: bool) {
         self.snake.handle_kbin(key).unwrap();
     }
 }
